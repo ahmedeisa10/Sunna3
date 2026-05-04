@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace Tamkeen.Application.DTOs
 {
@@ -13,5 +9,7 @@ namespace Tamkeen.Application.DTOs
         public string Specialization { get; set; }
         public int YearsOfExperience { get; set; }
         public string? Bio { get; set; }
+        public IFormFile IdCardFront { get; set; } = null!;
+        public IFormFile IdCardBack { get; set; } = null!;
     }
 }

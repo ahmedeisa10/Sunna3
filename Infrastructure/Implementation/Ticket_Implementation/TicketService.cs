@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SendGrid.Helpers.Errors.Model;
 using Tamkeen.Application.DTOs.Ticket_DTOs;
+using Tamkeen.Application.Interfaces;
 using Tamkeen.Application.Interfaces.Ticket_Interface;
 using Tamkeen.Domain.Entities;
 using Tamkeen.Domain.Enums;
@@ -15,12 +17,28 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly IImageService imageService;
+        private readonly INotificationService _notificationService;
+        private readonly UserManager<AppUser> _userManager;
 
-        public TicketService(AppDbContext context, IMapper mapper, IImageService imageService)
+        public TicketService(
+            AppDbContext context,
+            IMapper mapper,
+            IImageService imageService,
+            INotificationService notificationService,
+            UserManager<AppUser> userManager)
         {
             _context = context;
             _mapper = mapper;
             this.imageService = imageService;
+            _notificationService = notificationService;
+            _userManager = userManager;
+        }
+
+        // ── helper: جيب كل المانجرز ──────────────────────────────
+        private async Task<List<string>> GetManagerIdsAsync()
+        {
+            var managers = await _userManager.GetUsersInRoleAsync("Manager");
+            return managers.Select(m => m.Id).ToList();
         }
 
         public async Task<TicketResponseDto> CreateAsync(CreateTicketDto dto, string tenantId)
@@ -42,14 +60,11 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
                 CreatedAt = DateTime.UtcNow
             };
 
-            // If there are pictures, save them
             if (dto.Images != null && dto.Images.Any())
             {
-
                 ticket.Images = new List<Image>();
                 foreach (var file in dto.Images)
                 {
-
                     var url = await imageService.SaveImageAsync(file, "tickets");
                     ticket.Images.Add(new Image
                     {
@@ -64,8 +79,15 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             await _context.Tickets.AddAsync(ticket);
             await _context.SaveChangesAsync();
 
+            // ── notify كل المانجرز إن في طلب جديد ──
+            var managerIds = await GetManagerIdsAsync();
+            var notifyTasks = managerIds.Select(mid =>
+                _notificationService.NotifyNewTicketAsync(mid, ticket.Id.ToString(), ticket.Description));
+            await Task.WhenAll(notifyTasks);
+
             return _mapper.Map<TicketResponseDto>(ticket);
         }
+
         public async Task<IEnumerable<TicketResponseDto>> GetPendingAsync(
             string? governorate = null, string? city = null)
         {
@@ -88,7 +110,6 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             return _mapper.Map<IEnumerable<TicketResponseDto>>(tickets);
         }
 
-        //   Vendor apply for a ticket 
         public async Task ApplyAsync(Guid ticketId, string vendorId)
         {
             var ticket = await _context.Tickets
@@ -117,8 +138,18 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
 
             await _context.TicketApplications.AddAsync(application);
             await _context.SaveChangesAsync();
+
+            // ── notify المانجرز إن فيه فني تقدم ──
+            var vendor = await _userManager.FindByIdAsync(vendorId);
+            var managerIds = await GetManagerIdsAsync();
+            var notifyTasks = managerIds.Select(mid =>
+                _notificationService.NotifyNewTicketAsync(
+                    mid,
+                    ticketId.ToString(),
+                    $"فني {vendor?.FullName} تقدم على طلب: {ticket.Description}"));
+            await Task.WhenAll(notifyTasks);
         }
-        // Tenant accepts a specific vendor → deletes the remaining applications
+
         public async Task AcceptApplicationAsync(Guid applicationId, string tenantId)
         {
             var application = await _context.TicketApplications
@@ -133,21 +164,21 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             if (application.Ticket.Status != RequestStatus.Pending)
                 throw new BadRequestException("التيكيت دي اتكلفت بالفعل");
 
-
             application.Ticket.VendorId = application.VendorId;
             application.Ticket.Status = RequestStatus.vendorAccepted;
 
-            // Delete all other applications on the same ticket ──
-            var otherApplications = await _context.TicketApplications
-                .ToListAsync();
-
+            var otherApplications = await _context.TicketApplications.ToListAsync();
             _context.TicketApplications.RemoveRange(otherApplications);
 
-            // ── Delete the accepted applications too ──
-            //_context.TicketApplications.Remove(application);
-
             await _context.SaveChangesAsync();
+
+            // ── notify الفيندور إنه اتقبل ──
+            await _notificationService.NotifyVendorAssignedAsync(
+                application.VendorId,
+                application.TicketId.ToString(),
+                application.Ticket.Description);
         }
+
         public async Task<TicketResponseDto> GetByIdAsync(Guid id, string userId, string role)
         {
             var ticket = await _context.Tickets
@@ -157,22 +188,21 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
                 .FirstOrDefaultAsync(t => t.Id == id)
                 ?? throw new NotFoundException("Ticket not found");
 
-            // Manager access any ticket
             if (role == "Manager")
                 return _mapper.Map<TicketResponseDto>(ticket);
 
-            // Tenant only access his tickets
             if (role == "Tenant" && ticket.TenantId != userId)
                 throw new ForbiddenException("Access denied");
 
-            // Vendor only sees what is assigned to him
             if (role == "Vendor" && ticket.VendorId != userId)
                 throw new ForbiddenException("Access denied");
 
             return _mapper.Map<TicketResponseDto>(ticket);
         }
 
-        public async Task<IEnumerable<TicketResponseDto>> GetAllAsync(string userId, string role, string? governorate = null, string? city = null)
+        public async Task<IEnumerable<TicketResponseDto>> GetAllAsync(
+            string userId, string role,
+            string? governorate = null, string? city = null)
         {
             var query = _context.Tickets
                 .Include(t => t.Tenant)
@@ -184,7 +214,7 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             {
                 "Tenant" => query.Where(t => t.TenantId == userId),
                 "Vendor" => query.Where(t => t.VendorId == userId),
-                _ => query // Manager see all
+                _ => query
             };
 
             if (!string.IsNullOrWhiteSpace(governorate))
@@ -197,48 +227,6 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             return _mapper.Map<IEnumerable<TicketResponseDto>>(tickets);
         }
 
-        #region old methods without applications
-        //public async Task VendorApplayingAsync(Guid id, AssignTicketDto dto)
-        //{
-        //    var ticket = await _context.Tickets.FindAsync(id)
-        //        ?? throw new NotFoundException("Ticket not found");
-
-        //    if (ticket.Status != RequestStatus.Pending)
-        //        throw new BadRequestException("Only pending tickets can be assigned");
-        //    ticket.VendorId = dto.VendorId;
-        //    //ticket.Status = RequestStatus.Assigned;
-        //    await _context.SaveChangesAsync();
-        //}
-
-        //public async Task AcceptAsync(Guid id, string vendorId)
-        //{
-        //    var ticket = await _context.Tickets.FindAsync(id)
-        //        ?? throw new NotFoundException("Ticket not found");
-
-        //    if (ticket.Status != RequestStatus.Pending)
-        //        throw new BadRequestException("Ticket must be assigned first");
-        //    ticket.VendorId = vendorId;
-        //    ticket.Status = RequestStatus.InProgress;
-        //    await _context.SaveChangesAsync();
-        //}
-
-        //public async Task RejectAsync(Guid id, string vendorId)
-        //{
-        //    var ticket = await _context.Tickets.FindAsync(id)
-        //        ?? throw new NotFoundException("Ticket not found");
-
-        //    if (ticket.VendorId != vendorId)
-        //        throw new ForbiddenException("Not your ticket");
-
-        //    if (ticket.Status != RequestStatus.Assigned)
-        //        throw new BadRequestException("Ticket must be assigned first");
-
-        //    // يرجع Pending وينزع الـ Vendor
-        //    ticket.Status = RequestStatus.Pending;
-        //    ticket.VendorId = null;
-        //    await _context.SaveChangesAsync();
-        //}
-        #endregion
         public async Task<List<ImageResponseDto>> CompleteWithImagesAsync(
             Guid ticketId, CompleteTicketDto dto, string vendorId)
         {
@@ -256,7 +244,6 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             if (dto.Images == null || !dto.Images.Any())
                 throw new BadRequestException("لازم ترفع صورة واحدة على الأقل قبل الإنهاء");
 
-            // ── رفع صور After ──
             var savedImages = new List<Image>();
             foreach (var file in dto.Images)
             {
@@ -271,11 +258,15 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             }
 
             await _context.Images.AddRangeAsync(savedImages);
-
-            // ── تغيير الـ Status لـ Resolved ──
             ticket.Status = RequestStatus.Resolved;
-
             await _context.SaveChangesAsync();
+
+            // ── notify المانجرز إن التيكيت اتحلت ──
+            var managerIds = await GetManagerIdsAsync();
+            var notifyTasks = managerIds.Select(mid =>
+                _notificationService.NotifyTicketStatusChangedAsync(
+                    mid, ticketId.ToString(), "Resolved"));
+            await Task.WhenAll(notifyTasks);
 
             return _mapper.Map<List<ImageResponseDto>>(savedImages);
         }
@@ -293,9 +284,6 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
 
             ticket.Status = RequestStatus.Closed;
             await _context.SaveChangesAsync();
-        
-
         }
     }
-
 }

@@ -52,6 +52,17 @@ public static class DependencyInjection
         })
         .AddJwtBearer(options =>
         {
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = ctx =>
+                {
+                    var path = ctx.HttpContext.Request.Path;
+                    var token = ctx.Request.Query["access_token"].ToString();
+                    if (!string.IsNullOrEmpty(token) && path.StartsWithSegments("/hubs"))
+                        ctx.Token = token;
+                    return Task.CompletedTask;
+                }
+            };
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
@@ -87,6 +98,7 @@ public static class DependencyInjection
         services.AddScoped<IVendorService, VendorService>();
         services.AddScoped<IFeedbackService, FeedbackService>();
         services.AddScoped<IInvitationService, InvitationService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }

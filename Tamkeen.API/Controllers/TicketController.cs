@@ -3,7 +3,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Tamkeen.Application.DTOs.Ticket_DTOs;
 using Tamkeen.Application.Interfaces.Ticket_Interface;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Tamkeen.API.Controllers
 {

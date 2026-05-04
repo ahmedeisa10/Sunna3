@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Tamkeen.Application.DependencyInjection;
 using Tamkeen.Domain.Entities;
+using Tamkeen.Infrastructure.Hubs;
 using Tamkeen.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,9 +24,12 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins("http://localhost:4200")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, NameIdentifierUserIdProvider>();
 
 builder.Services.AddSwaggerGen();
 
@@ -40,6 +45,7 @@ app.UseStaticFiles();
 app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
@@ -49,5 +55,4 @@ using (var scope = app.Services.CreateScope())
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     await IdentitySeeder.SeedAsync(userManager, roleManager);
 }
-
 app.Run();

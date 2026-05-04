@@ -3,14 +3,13 @@ using SendGrid.Helpers.Errors.Model;
 using Tamkeen.Application.DTOs;
 using Tamkeen.Application.DTOs.Feedback;
 using Tamkeen.Application.DTOs.Vendor;
-using Tamkeen.Application.Interfaces;
 using Tamkeen.Application.Interfaces.Vendor;
 using Tamkeen.Domain.Entities;
 using Tamkeen.Infrastructure.Data;
 
 namespace Tamkeen.Infrastructure.Services
 {
-    public class VendorService(AppDbContext _context) : IVendorService
+    public class VendorService(AppDbContext _context, IImageService imageService) : IVendorService
     {
         public async Task<VendorProfileDto> GetVendorProfileAsync(string vendorId)
         {
@@ -52,17 +51,19 @@ namespace Tamkeen.Infrastructure.Services
         }
         public async Task CreateProfileAsync(CreateVendorProfileDto dto)
         {
-
-
+            string frontPath = await imageService.SaveIdCard(dto.IdCardFront, "front");
+            string backPath = await imageService.SaveIdCard(dto.IdCardBack, "back");
             var profile = new VendorProfile
             {
                 fullName = dto.FullName,
-                
+
                 phone = dto.PhoneNumber,
                 specialty = dto.Specialization,
 
                 yearsExperience = dto.YearsOfExperience,
-                bio = dto.Bio
+                bio = dto.Bio,
+                IdCardFront = frontPath,
+                IdCardBack = backPath
             };
 
             _context.vendorProfiles.Add(profile);
@@ -79,6 +80,8 @@ namespace Tamkeen.Infrastructure.Services
                     specialty = v.specialty,
                     yearsExperience = v.yearsExperience,
                     bio = v.bio,
+                    IdCardFront = v.IdCardFront,
+                    IdCardBack = v.IdCardBack,
                     CreatedAt = v.CreatedAt
                 })
                 .ToListAsync();

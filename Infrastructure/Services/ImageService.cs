@@ -43,6 +43,35 @@ namespace Tamkeen.Infrastructure.Services
             // return the relative URL
             return $"/uploads/{folder}/{fileName}";
         }
+        public async Task<string> SaveIdCard(IFormFile file, string side)
+        {
+            if (file == null || file.Length == 0)
+                throw new Exception("Invalid file");
+
+            // ── WebRootPath fallback ──────────────────────────────────
+            // WebRootPath is null when no wwwroot folder exists or
+            // UseStaticFiles() hasn't been configured yet.
+            // We fall back to ContentRootPath/wwwroot and create it.
+            var webRoot = _env.WebRootPath;
+            if (string.IsNullOrEmpty(webRoot))
+            {
+                webRoot = Path.Combine(_env.ContentRootPath, "wwwroot");
+                Directory.CreateDirectory(webRoot);
+            }
+            // ─────────────────────────────────────────────────────────
+
+            var folder = Path.Combine(webRoot, "images", "id-cards");
+            Directory.CreateDirectory(folder);
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var fileName = $"{Guid.NewGuid()}_{side}{ext}";
+            var filePath = Path.Combine(folder, fileName);
+
+            await using var stream = new FileStream(filePath, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            return $"/images/id-cards/{fileName}";
+        }
 
         public void DeleteImage(string url)
         {

@@ -10,6 +10,7 @@ namespace Tamkeen.Infrastructure.Services
     public interface IImageService
     {
         Task<string> SaveImageAsync(IFormFile file, string folder);
+        Task<string> SaveIdCard(IFormFile file, string side);
         void DeleteImage(string url);
     }
 }
