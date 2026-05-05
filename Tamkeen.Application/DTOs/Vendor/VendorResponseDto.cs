@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Tamkeen.Application.DTOs.Vendor
+﻿namespace Tamkeen.Application.DTOs.Vendor
 {
     public class VendorResponseDto
     {
@@ -13,7 +7,8 @@ namespace Tamkeen.Application.DTOs.Vendor
         public string specialty { get; set; } = null!;
         public int yearsExperience { get; set; }
         public string? bio { get; set; } = null!;
-
+        public string? IdCardFront { get; set; }
+        public string? IdCardBack { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

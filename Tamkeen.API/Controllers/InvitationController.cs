@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tamkeen.Application.DTOs;
@@ -58,8 +57,8 @@ namespace Tamkeen.API.Controllers
             {
                 message = message,
                 token = token,
-                profileImageUrl = profileImageUrl,  // ✅
-                imageUrl = profileImageUrl,  // ✅ نفس القيمة باسم تاني للسيكيورتي
+                profileImageUrl = profileImageUrl, 
+                imageUrl = profileImageUrl, 
             });
         }
     }

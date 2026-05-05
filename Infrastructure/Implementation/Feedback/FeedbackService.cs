@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SendGrid.Helpers.Errors.Model;
-using Tamkeen.Application.DTOs;
 using Tamkeen.Application.DTOs.Feedback;
-using Tamkeen.Application.Interfaces;
 using Tamkeen.Application.Interfaces.Feedback;
 using Tamkeen.Domain.Entities;
 using Tamkeen.Domain.Enums;

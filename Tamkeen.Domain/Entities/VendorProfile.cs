@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Tamkeen.Domain.Entities
+﻿namespace Tamkeen.Domain.Entities
 {
     public class VendorProfile
     {
@@ -14,8 +8,10 @@ namespace Tamkeen.Domain.Entities
         public string specialty { get; set; } = null!;
         public int yearsExperience { get; set; }
         public string? bio { get; set; } = null!;
-
+        public string IdCardFront { get; set; } = null!;
+        public string IdCardBack { get; set; } = null!;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+       
 
     }
 }

@@ -7,14 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Tamkeen.Domain\Tamkeen.Domain.csproj" />
+    <Compile Remove="Features\**" />
+    <EmbeddedResource Remove="Features\**" />
+    <None Remove="Features\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Company\Handler\Command\" />
-    <Folder Include="Features\Company\Handler\Query\" />
-    <Folder Include="Features\Company\Request\Command\" />
-    <Folder Include="Features\Company\Request\Query\" />
+    <ProjectReference Include="..\Tamkeen.Domain\Tamkeen.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

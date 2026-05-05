@@ -15,6 +15,7 @@ namespace Tamkeen.Infrastructure.Data
         public DbSet<SparePartRequest> SparePartRequests { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<VendorProfile> vendorProfiles { get; set; }
+        public DbSet<AppNotification> Notifications => Set<AppNotification>();
         public DbSet<VendorInvitation> vendorInvitations { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {

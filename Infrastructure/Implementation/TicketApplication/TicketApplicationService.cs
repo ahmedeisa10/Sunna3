@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SendGrid.Helpers.Errors.Model;
-using Tamkeen.Application.DTOs;
 using Tamkeen.Application.DTOs.TicketApplication;
 using Tamkeen.Application.Interfaces;
-using Tamkeen.Domain.Entities;
-using Tamkeen.Domain.Enums;
 using Tamkeen.Infrastructure.Data;
 
 namespace Tamkeen.Infrastructure.Services

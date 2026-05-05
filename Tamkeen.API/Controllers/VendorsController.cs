@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Tamkeen.Application.DTOs;
-using Tamkeen.Application.Interfaces;
 using Tamkeen.Application.Interfaces.Vendor;
-using Tamkeen.Infrastructure.Services;
 
 namespace Tamkeen.API.Controllers
 {
@@ -20,10 +17,8 @@ namespace Tamkeen.API.Controllers
         }
 
         [HttpPost("profile")]
-        public async Task<IActionResult> CreateProfile(CreateVendorProfileDto dto)
+        public async Task<IActionResult> CreateProfile([FromForm] CreateVendorProfileDto dto)
         {
-            var userId = User.FindFirst("uid")?.Value;
-
             await _service.CreateProfileAsync(dto);
 
             return Ok(new { message = "Profile created successfully" });
