@@ -1,16 +1,17 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 using Tamkeen.Application.DTOs.Manager_Management;
 using Tamkeen.Application.DTOs.Vendor;
+using Tamkeen.Application.Interfaces;
 using Tamkeen.Domain.Entities;
 
 namespace Tamkeen.Infrastructure.Implementation
 {
-    public class ManagerService
+    public class ManagerService: IManagerService
     {
         private readonly UserManager<AppUser> _userManager;
 
@@ -18,8 +19,6 @@ namespace Tamkeen.Infrastructure.Implementation
         {
             _userManager = userManager;
         }
-
-        // ── كل الـ Tenants ──────────────────────────────────
         public async Task<IEnumerable<AllTenantsDto>> GetAllTenantsAsync()
         {
             var tenants = await _userManager.GetUsersInRoleAsync("Tenant");
@@ -32,8 +31,6 @@ namespace Tamkeen.Infrastructure.Implementation
                 Phone = u.PhoneNumber!
             });
         }
-
-        // ── كل الـ Vendors ──────────────────────────────────
         public async Task<IEnumerable<AllVendorsDto>> GetAllVendorsAsync()
         {
             var vendors = await _userManager.GetUsersInRoleAsync("Vendor");

@@ -99,6 +99,8 @@ public static class DependencyInjection
         services.AddScoped<IFeedbackService, FeedbackService>();
         services.AddScoped<IInvitationService, InvitationService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IManagerService,ManagerService>();
+
 
         return services;
     }
