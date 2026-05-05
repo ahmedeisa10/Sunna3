@@ -38,7 +38,7 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
                 Deadline = dto.Deadline,
                 CompanyId = dto.CompanyId,
                 TenantId = tenantId,
-                Status = RequestStatus.Pending,
+                Status = RequestStatus.ManagerReview,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -66,6 +66,8 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
 
             return _mapper.Map<TicketResponseDto>(ticket);
         }
+
+        //Shown For Vendors
         public async Task<IEnumerable<TicketResponseDto>> GetPendingAsync(
             string? governorate = null, string? city = null)
         {
@@ -295,6 +297,42 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             await _context.SaveChangesAsync();
         
 
+        }
+
+        public async Task<IEnumerable<TicketResponseDto>> GetManagerReviewAsync()
+        {
+            var tickets = await _context.Tickets
+                .Include(t => t.Tenant)
+                .Include(t => t.Images)
+                .Where(t => t.Status == RequestStatus.ManagerReview)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<TicketResponseDto>>(tickets);
+        }
+
+        public async Task ApproveAsync(Guid ticketId)
+        {
+            var ticket = await _context.Tickets.FindAsync(ticketId)
+                ?? throw new NotFoundException("Ticket not found");
+
+            if (ticket.Status != RequestStatus.ManagerReview)
+                throw new BadRequestException("الطلب مش في انتظار الموافقة");
+
+            ticket.Status = RequestStatus.Pending;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RejectAsync(Guid ticketId)
+        {
+            var ticket = await _context.Tickets.FindAsync(ticketId)
+               ?? throw new NotFoundException("Ticket not found");
+
+            if (ticket.Status != RequestStatus.ManagerReview)
+                throw new BadRequestException("الطلب مش في انتظار الموافقة");
+
+            ticket.Status = RequestStatus.Rejected;
+            await _context.SaveChangesAsync();
         }
     }
 
