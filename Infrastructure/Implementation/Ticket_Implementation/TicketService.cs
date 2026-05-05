@@ -33,8 +33,6 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             _notificationService = notificationService;
             _userManager = userManager;
         }
-
-        // ── helper: جيب كل المانجرز ──────────────────────────────
         private async Task<List<string>> GetManagerIdsAsync()
         {
             var managers = await _userManager.GetUsersInRoleAsync("Manager");
@@ -78,17 +76,14 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
 
             await _context.Tickets.AddAsync(ticket);
             await _context.SaveChangesAsync();
-
-            // ── notify كل المانجرز إن في طلب جديد ──
             var managerIds = await GetManagerIdsAsync();
             var notifyTasks = managerIds.Select(mid =>
                 _notificationService.NotifyNewTicketAsync(mid, ticket.Id.ToString(), ticket.Description));
             await Task.WhenAll(notifyTasks);
-
+            
             return _mapper.Map<TicketResponseDto>(ticket);
         }
 
-        //Shown For Vendors
         public async Task<IEnumerable<TicketResponseDto>> GetPendingAsync(
             string? governorate = null, string? city = null)
         {
@@ -139,8 +134,6 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
 
             await _context.TicketApplications.AddAsync(application);
             await _context.SaveChangesAsync();
-
-            // ── notify المانجرز إن فيه فني تقدم ──
             var vendor = await _userManager.FindByIdAsync(vendorId);
             var managerIds = await GetManagerIdsAsync();
             var notifyTasks = managerIds.Select(mid =>
@@ -172,8 +165,6 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             _context.TicketApplications.RemoveRange(otherApplications);
 
             await _context.SaveChangesAsync();
-
-            // ── notify الفيندور إنه اتقبل ──
             await _notificationService.NotifyVendorAssignedAsync(
                 application.VendorId,
                 application.TicketId.ToString(),
@@ -262,7 +253,6 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             ticket.Status = RequestStatus.Resolved;
             await _context.SaveChangesAsync();
 
-            // ── notify المانجرز إن التيكيت اتحلت ──
             var managerIds = await GetManagerIdsAsync();
             var notifyTasks = managerIds.Select(mid =>
                 _notificationService.NotifyTicketStatusChangedAsync(
