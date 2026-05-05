@@ -9,20 +9,27 @@ namespace Tamkeen.Application.Interfaces.Ticket_Interface
 {
     public interface ITicketService
     {
-        Task<IEnumerable<TicketResponseDto>> GetPendingAsync(string? governorate = null, string? city = null);
-        Task ApplyAsync(Guid ticketId, string vendorId);
-        Task AcceptApplicationAsync(Guid applicationId, string tenantId);
         Task<TicketResponseDto> CreateAsync(CreateTicketDto dto, string tenantId);
         Task<TicketResponseDto> GetByIdAsync(Guid id, string userId, string role);
-        Task<IEnumerable<TicketResponseDto>> GetAllAsync(string userId, string role, string? governorate = null, string? city = null);
-        //Task AssignVendorAsync(Guid id, AssignTicketDto dto);         // Manager
-        //Task AcceptAsync(Guid id, string vendorId);                   // Vendor قبل
-        //Task RejectAsync(Guid id, string vendorId);                   // Vendor رفض
-        Task<List<ImageResponseDto>> CompleteWithImagesAsync(Guid ticketId, CompleteTicketDto dto, string vendorId);
-        Task CloseAsync(Guid id, string tenantId);                    // Tenant تمام
+        Task<IEnumerable<TicketResponseDto>> GetAllAsync(string userId, string role,
+            string? governorate = null, string? city = null);
 
-        //Images
+        //========MANAGER==============
+        Task<IEnumerable<TicketResponseDto>> GetManagerReviewAsync();   // Reauests Waiting for manager approval
+        Task ApproveAsync(Guid ticketId);                                  // manager accept >> forward to pending
+        Task RejectAsync(Guid ticketId);                    // manager reject >> still in DB but reject
 
+        //==============VENDOR===============
+        Task<IEnumerable<TicketResponseDto>> GetPendingAsync(
+            string? governorate = null, string? city = null);             // Pending Request only >> shown for vendors
+        Task ApplyAsync(Guid ticketId, string vendorId);
 
+        //============TENANT===============
+        Task AcceptApplicationAsync(Guid applicationId, string tenantId);
+        Task CloseAsync(Guid id, string tenantId);
+
+        Task<List<ImageResponseDto>> CompleteWithImagesAsync(
+            Guid ticketId, CompleteTicketDto dto, string vendorId);
     }
+
 }

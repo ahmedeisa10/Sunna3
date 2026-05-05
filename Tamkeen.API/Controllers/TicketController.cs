@@ -68,6 +68,35 @@ namespace Tamkeen.API.Controllers
             var ticket = await _ticketService.CreateAsync(dto, tenantId);
             return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, ticket);
         }
+
+        //Manager See Requests
+        [HttpGet("ManagerReview")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> GetManagerReview()
+        {
+            var result = await _ticketService.GetManagerReviewAsync();
+            return Ok(result);
+        }
+
+        //Manager Accept Request
+        [HttpPatch("{id:guid}/approve")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> Approve(Guid id)
+        {
+            await _ticketService.ApproveAsync(id);
+            return Ok(new { message = "Ticket Accepted and shown for vendor" });
+        }
+
+
+        //Manager Reject Request
+        [HttpPatch("{id:guid}/reject")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> Reject(Guid id )
+        {
+            await _ticketService.RejectAsync(id);
+            return Ok(new { message = "Request has been rejected" });
+        }
+
         #region commented out
 
         //[HttpPatch("{id}/assign")]
