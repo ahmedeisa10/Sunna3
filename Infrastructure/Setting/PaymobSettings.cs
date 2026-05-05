@@ -12,6 +12,7 @@ namespace Tamkeen.Infrastructure.Setting
         public string CardIntegrationId { get; set; }
         public string WalletIntegrationId { get; set; }
         public string IframeId { get; set; }
+        public string HMCA { get; set; }
         public string BaseUrl { get; set; }
     }
 }
