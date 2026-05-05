@@ -8,6 +8,7 @@ namespace Tamkeen.Domain.Entities
         public string TenantLocation { get; set; }
         public string Governorate { get; set; }
         public string City { get; set; }
+        public decimal Price { get; set; }
         public string problemType { get; set; }
         public RequestStatus Status { get; set; }
         public Priority Priority { get; set; }
@@ -23,5 +24,6 @@ namespace Tamkeen.Domain.Entities
         public ICollection<Image> Images { get; set; }
         public ICollection<Feedback> Feedbacks { get; set; }
         public ICollection<TicketApplication> Applications { get; set; }
+       
     }
 }
