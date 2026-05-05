@@ -17,6 +17,7 @@ namespace Tamkeen.Infrastructure.Data
         public DbSet<VendorProfile> vendorProfiles { get; set; }
         public DbSet<AppNotification> Notifications => Set<AppNotification>();
         public DbSet<VendorInvitation> vendorInvitations { get; set; }
+        public DbSet<Payment> Payments { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
