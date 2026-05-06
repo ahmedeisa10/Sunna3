@@ -82,7 +82,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                     order_id = orderId,
                     billing_data = billingData,
                     currency = "EGP",
-                    integration_id = integrationId,
+                    integration_id = int.Parse(integrationId),
                     lock_order_when_paid = true
                 }
             );
