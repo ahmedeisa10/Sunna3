@@ -152,7 +152,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
         private bool VerifyHmac(string payload, string hmacHeader)
         {
             // HMAC Secret بتاخده من Paymob Dashboard → Developers → Webhooks
-            var secret = "YOUR_HMAC_SECRET";
+            var secret = _settings.HmacSecret;
             var keyBytes = Encoding.UTF8.GetBytes(secret);
             var msgBytes = Encoding.UTF8.GetBytes(payload);
 
