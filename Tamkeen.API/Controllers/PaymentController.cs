@@ -23,7 +23,7 @@ namespace Tamkeen.API.Controllers
         [Authorize(Roles = "Tenant")]
         public async Task<IActionResult> Initiate([FromBody] InitiatePaymentDto dto)
         {
-            var tenantId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var tenantId = User.FindFirstValue("sub")!;
             var result = await _paymentService.InitiatePaymentAsync(dto, tenantId);
             return Ok(result);
         }
