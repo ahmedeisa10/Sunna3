@@ -248,6 +248,7 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
                     TicketId = ticketId
                 });
             }
+            ticket.Price = dto.Price;
 
             await _context.Images.AddRangeAsync(savedImages);
             ticket.Status = RequestStatus.Resolved;

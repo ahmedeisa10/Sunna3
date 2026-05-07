@@ -5,6 +5,7 @@ namespace Tamkeen.Application.DTOs.Ticket_DTOs
 {
     public class CompleteTicketDto
     {
+        public decimal Price { get; set; }
         public List<IFormFile> Images { get; set; }
     }
 }
