@@ -124,7 +124,13 @@ namespace Tamkeen.Infrastructure.Implementation
                 FullName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
                 ImageUrl = imagePath,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+
+                // Money
+                IBAN = dto.IBAN,
+                BankName = dto.BankName,
+                InstapayNumber = dto.InstapayNumber,
+                WalletNumber = dto.WalletNumber
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -142,5 +148,7 @@ namespace Tamkeen.Infrastructure.Implementation
 
             return (true, "Vendor registered successfully.", token, imagePath);
         }
+   
+    
     }
 }

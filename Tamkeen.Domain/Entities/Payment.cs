@@ -31,5 +31,9 @@ namespace Tamkeen.Domain.Entities
         public bool IsPaid { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? PaidAt { get; set; }
+
+        //For Vendors
+        public bool IsDisbursed { get; set; } = false;
+        public DateTime? DisbursedAt { get; set; }
     }
 }

@@ -15,5 +15,12 @@ namespace Tamkeen.Domain.Entities
         // The feedback written for Vendor
         public ICollection<Feedback> VendorFeedbacks { get; set; }
         public ICollection<TicketApplication> Applications { get; set; }
+
+
+        //Money Info
+        public string? IBAN { get; set; }
+        public string? BankName { get; set; }
+        public string? InstapayNumber { get; set; }
+        public string? WalletNumber { get; set; }
     }
 }

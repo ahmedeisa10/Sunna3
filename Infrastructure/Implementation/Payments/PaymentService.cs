@@ -7,6 +7,7 @@ using System.Text.Json;
 using Tamkeen.Application.DTOs.Payment_DTOs;
 using Tamkeen.Application.Interfaces.Payments;
 using Tamkeen.Domain.Entities;
+using Tamkeen.Domain.Enums;
 using Tamkeen.Infrastructure.Data;
 using Tamkeen.Infrastructure.Setting;
 
@@ -38,6 +39,10 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                 .Include(t => t.Tenant)
                 .FirstOrDefaultAsync(t => t.Id == dto.TicketId)
                 ?? throw new NotFoundException("Ticket not found");
+
+            if (ticket.Status != RequestStatus.Resolved)
+                throw new BadRequestException("لازم الـ vendor يخلص شغله الأول");
+
 
             if (ticket.TenantId != tenantId)
                 throw new ForbiddenException("Access denied");

@@ -12,5 +12,13 @@ namespace Tamkeen.Application.DTOs
 
         public string PhoneNumber { get; set; }   
         public IFormFile Image { get; set; }
+
+
+        //Money Info
+        public string? IBAN { get; set; }
+        public string? BankName { get; set; }
+        public string? InstapayNumber { get; set; }
+        public string? WalletNumber { get; set; }
+
     }
 }
