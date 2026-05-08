@@ -149,8 +149,29 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             payment.IsPaid = true;
             payment.TransactionId = transId;
             payment.PaidAt = DateTime.UtcNow;
+            var ticket = await _context.Tickets.FindAsync(payment.TicketId);
+            if (ticket != null)
+            {
+                ticket.IsPaid = true;
+            }
 
             await _context.SaveChangesAsync();
+        }
+        public async Task<bool> VerifyAndSyncPaymentAsync(Guid paymentId)
+        {
+            var payment = await _context.Payments
+                .Include(p => p.Ticket)
+                .FirstOrDefaultAsync(p => p.Id == paymentId);
+
+            if (payment == null) return false;
+
+            if (payment.IsPaid && payment.Ticket != null && !payment.Ticket.IsPaid)
+            {
+                payment.Ticket.IsPaid = true;
+                await _context.SaveChangesAsync();
+            }
+
+            return payment.IsPaid;
         }
 
         // ── تحقق من HMAC عشان نتأكد إن الـ webhook من Paymob ─
@@ -167,5 +188,6 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
 
             return computed == hmacHeader.ToLower();
         }
+
     }
 }

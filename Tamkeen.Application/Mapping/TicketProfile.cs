@@ -19,6 +19,9 @@ namespace Tamkeen.Application.Mapping
                     opt => opt.MapFrom(src => src.Tenant != null
                         ? src.Tenant.FullName
                         : null))
+                .ForMember(d => d.Price, o => o.MapFrom(s => s.Price))
+    .ForMember(d => d.IsPaid, o => o.MapFrom(s => s.IsPaid))
+    .ForMember(d => d.ProblemType, o => o.MapFrom(s => s.problemType))
                 .ForMember(dest => dest.VendorName,
                     opt => opt.MapFrom(src => src.Vendor != null
                         ? src.Vendor.FullName

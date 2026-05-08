@@ -10,5 +10,6 @@ namespace Tamkeen.Application.Interfaces.Payments
 
         // Paymob بيبعت webhook لما الدفع يتم
         Task HandleWebhookAsync(string payload, string hmac);
+        Task<bool> VerifyAndSyncPaymentAsync(Guid paymentId);
     }
 }

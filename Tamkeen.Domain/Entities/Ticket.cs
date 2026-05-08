@@ -19,6 +19,7 @@ namespace Tamkeen.Domain.Entities
         public AppUser Tenant { get; set; }
         public string? VendorId { get; set; }
         public AppUser Vendor { get; set; }
+        public bool IsPaid { get; set; }
         public Guid? CompanyId { get; set; }
         public Company? Company { get; set; }
         public ICollection<Image> Images { get; set; }

@@ -20,5 +20,9 @@
         public Guid CompanyId { get; set; }
         public List<string> BeforeImageUrls { get; set; } = new();
         public List<string> AfterImageUrls { get; set; } = new();
+        public decimal Price { get; set; }
+        public bool IsPaid { get; set; }
+        public string? ProblemType { get; set; }
+
     }
 }

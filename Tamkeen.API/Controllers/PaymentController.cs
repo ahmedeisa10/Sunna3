@@ -41,5 +41,12 @@ namespace Tamkeen.API.Controllers
             await _paymentService.HandleWebhookAsync(payload, hmac);
             return Ok();
         }
+        [HttpPost("verify/{paymentId}")]
+        [Authorize(Roles = "Tenant")]
+        public async Task<IActionResult> VerifyPayment(Guid paymentId)
+        {
+            var result = await _paymentService.VerifyAndSyncPaymentAsync(paymentId);
+            return Ok(new { isPaid = result });
+        }
     }
 }

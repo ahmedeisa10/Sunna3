@@ -273,6 +273,8 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
 
             if (ticket.Status != RequestStatus.Resolved)
                 throw new BadRequestException("Ticket must be resolved first");
+            if (!ticket.IsPaid)
+                throw new BadRequestException("لازم تدفع الأول قبل الإغلاق");
 
             ticket.Status = RequestStatus.Closed;
             await _context.SaveChangesAsync();
