@@ -95,7 +95,8 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                 integrationId,
                 ticket.Tenant.Email!,
                 ticket.Tenant.FullName,
-                dto.WalletNumber
+                dto.WalletNumber,
+                "http://localhost:4200/payment/callback"
             );
 
             // لو كارت → رجّع iframe url
@@ -170,7 +171,6 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                 payment.Ticket.IsPaid = true;
                 await _context.SaveChangesAsync();
             }
-
             return payment.IsPaid;
         }
 

@@ -54,7 +54,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
         public async Task<string> GetPaymentKeyAsync(
             string authToken, string orderId,
             decimal amountInPiasters, string integrationId,
-            string tenantEmail, string tenantName, string? walletNumber = null)
+            string tenantEmail, string tenantName, string? walletNumber = null, string? callbackUrl = null)
         {
             var billingData = new
             {
@@ -83,7 +83,8 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                     billing_data = billingData,
                     currency = "EGP",
                     integration_id = int.Parse(integrationId),
-                    lock_order_when_paid = true
+                    lock_order_when_paid = true,
+                    redirection_url = callbackUrl ?? "http://localhost:4200/payment/callback"
                 }
             );
 
