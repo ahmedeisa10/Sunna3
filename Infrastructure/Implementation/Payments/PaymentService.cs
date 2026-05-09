@@ -158,22 +158,33 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
 
             await _context.SaveChangesAsync();
         }
-        public async Task<bool> VerifyAndSyncPaymentAsync(Guid paymentId)
+        // في PaymentService.cs
+        public async Task<PaymentVerifyResultDto> VerifyAndSyncPaymentAsync(Guid paymentId)
         {
             var payment = await _context.Payments
                 .Include(p => p.Ticket)
                 .FirstOrDefaultAsync(p => p.Id == paymentId);
 
-            if (payment == null) return false;
+            if (payment == null)
+                return new PaymentVerifyResultDto { IsPaid = false };
 
-            if (payment.IsPaid && payment.Ticket != null && !payment.Ticket.IsPaid)
+            if (payment.IsPaid)
             {
-                payment.Ticket.IsPaid = true;
-                await _context.SaveChangesAsync();
+                // sync الـ Ticket لو لسه مش متحدث
+                if (payment.Ticket != null && !payment.Ticket.IsPaid)
+                {
+                    payment.Ticket.IsPaid = true;
+                    await _context.SaveChangesAsync();
+                }
+                return new PaymentVerifyResultDto
+                {
+                    IsPaid = true,
+                    TicketId = payment.TicketId
+                };
             }
-            return payment.IsPaid;
-        }
 
+            return new PaymentVerifyResultDto { IsPaid = false };
+        }
         // ── تحقق من HMAC عشان نتأكد إن الـ webhook من Paymob ─
         private bool VerifyHmac(string payload, string hmacHeader)
         {
@@ -187,6 +198,48 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             var computed = Convert.ToHexString(hash).ToLower();
 
             return computed == hmacHeader.ToLower();
+        }
+        // في PaymentService.cs
+        public async Task<PaymentVerifyResultDto> ConfirmFromCallbackAsync(CallbackConfirmDto dto)
+        {
+            if (!Guid.TryParse(dto.PaymentId, out var paymentId))
+                return new PaymentVerifyResultDto { IsPaid = false };
+
+            var payment = await _context.Payments
+                .Include(p => p.Ticket)
+                .FirstOrDefaultAsync(p => p.Id == paymentId);
+
+            if (payment == null)
+                return new PaymentVerifyResultDto { IsPaid = false };
+
+            // لو مدفوع بالفعل — رجّع البيانات
+            if (payment.IsPaid)
+                return new PaymentVerifyResultDto
+                {
+                    IsPaid = true,
+                    TicketId = payment.TicketId
+                };
+
+            // ✅ Paymob قال success — صدّقه وحدّث الـ DB
+            if (dto.Success)
+            {
+                payment.IsPaid = true;
+                payment.TransactionId = dto.TransactionId;
+                payment.PaidAt = DateTime.UtcNow;
+
+                if (payment.Ticket != null)
+                    payment.Ticket.IsPaid = true;
+
+                await _context.SaveChangesAsync();
+
+                return new PaymentVerifyResultDto
+                {
+                    IsPaid = true,
+                    TicketId = payment.TicketId
+                };
+            }
+
+            return new PaymentVerifyResultDto { IsPaid = false };
         }
 
     }

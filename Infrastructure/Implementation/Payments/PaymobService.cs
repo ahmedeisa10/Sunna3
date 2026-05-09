@@ -113,5 +113,30 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             // بيرجع redirect url الـ tenant يفتحه على موبايله
             return result.GetProperty("redirect_url").GetString()!;
         }
-    }}
+        // في PaymobService.cs — أضف الـ method دي
+        public async Task<bool> CheckTransactionSuccessAsync(string paymobOrderId)
+        {
+            var authToken = await GetAuthTokenAsync();
+
+            var response = await _http.GetAsync(
+                $"{_settings.BaseUrl}/ecommerce/orders/{paymobOrderId}?auth_token={authToken}"
+            );
+
+            if (!response.IsSuccessStatusCode) return false;
+
+            var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+            // Paymob بيرجع payment_status: "paid" لو اتدفع
+            try
+            {
+                var paymentStatus = result.GetProperty("payment_status").GetString();
+                return paymentStatus?.ToLower() == "paid";
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+}
 
