@@ -17,7 +17,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             _settings = settings.Value;
         }
 
-        // ── خطوة 1: Auth → بنجيب auth token ──────────────
+        //1- Auth → Get Auth token
         public async Task<string> GetAuthTokenAsync()
         {
             var response = await _http.PostAsJsonAsync(
@@ -29,7 +29,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             return result.GetProperty("token").GetString()!;
         }
 
-        // ── خطوة 2: Order → بنسجل الأوردر ────────────────
+        //  Order → save order
         public async Task<string> RegisterOrderAsync(
             string authToken, decimal amountInPiasters, string merchantOrderId)
         {
@@ -39,7 +39,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                 {
                     auth_token = authToken,
                     delivery_needed = false,
-                    amount_cents = (int)amountInPiasters,  // بالقروش مش الجنيه!
+                    amount_cents = (int)amountInPiasters,  
                     currency = "EGP",
                     merchant_order_id = merchantOrderId,
                     items = new object[] { }
@@ -50,7 +50,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             return result.GetProperty("id").GetInt32().ToString();
         }
 
-        // ── خطوة 3: Payment Key → بنجيب token للـ iframe ─
+        // 3- Payment Key => We get a token for the iframe 
         public async Task<string> GetPaymentKeyAsync(
             string authToken, string orderId,
             decimal amountInPiasters, string integrationId,
@@ -78,7 +78,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                 {
                     auth_token = authToken,
                     amount_cents = (int)amountInPiasters,
-                    expiration = 3600,             // صالح لساعة
+                    expiration = 3600,             
                     order_id = orderId,
                     billing_data = billingData,
                     currency = "EGP",
@@ -92,7 +92,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             return result.GetProperty("token").GetString()!;
         }
 
-        // ── Wallet: بنطلب الدفع مباشرة ────────────────────
+        //Wallet: We request payment directly
         public async Task<string> RequestWalletPaymentAsync(
             string paymentToken, string walletNumber)
         {
@@ -110,10 +110,10 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             );
 
             var result = await response.Content.ReadFromJsonAsync<JsonElement>();
-            // بيرجع redirect url الـ tenant يفتحه على موبايله
+            // return redirect url => tenant open it on his mobile 
             return result.GetProperty("redirect_url").GetString()!;
         }
-        // في PaymobService.cs — أضف الـ method دي
+        
         public async Task<bool> CheckTransactionSuccessAsync(string paymobOrderId)
         {
             var authToken = await GetAuthTokenAsync();
@@ -126,7 +126,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
 
             var result = await response.Content.ReadFromJsonAsync<JsonElement>();
 
-            // Paymob بيرجع payment_status: "paid" لو اتدفع
+            // Paymob returns payment_status: "paid" if payment has been received
             try
             {
                 var paymentStatus = result.GetProperty("payment_status").GetString();

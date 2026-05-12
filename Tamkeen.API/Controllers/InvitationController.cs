@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tamkeen.Application.DTOs;
-using Tamkeen.Application.Interfaces;
+using Tamkeen.Application.DTOs.VendorInvitation_DTOs;
+using Tamkeen.Application.Interfaces.Invitation;
 using Tamkeen.Infrastructure.Data;
 
 namespace Tamkeen.API.Controllers

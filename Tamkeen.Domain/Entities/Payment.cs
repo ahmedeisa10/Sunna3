@@ -18,15 +18,15 @@ namespace Tamkeen.Domain.Entities
         public string VendorId { get; set; }
         public AppUser Vendor { get; set; }
 
-        public decimal TotalAmount { get; set; }   // المبلغ الكلي
-        public decimal PlatformAmount { get; set; }   // 10% للمنصة
-        public decimal VendorAmount { get; set; }   // 90% للـ vendor
+        public decimal TotalAmount { get; set; }  
+        public decimal PlatformAmount { get; set; }   
+        public decimal VendorAmount { get; set; }   
 
-        public string PaymentMethod { get; set; }   // "card" or "wallet"
-        public string? WalletNumber { get; set; }   // لو كاش
+        public string PaymentMethod { get; set; }   
+        public string? WalletNumber { get; set; }  
 
-        public string? PaymobOrderId { get; set; }   // الـ order id من Paymob
-        public string? TransactionId { get; set; }   // الـ transaction id بعد الدفع
+        public string? PaymobOrderId { get; set; }   //  order id from Paymob
+        public string? TransactionId { get; set; }   //  transaction id after payment 
 
         public bool IsPaid { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

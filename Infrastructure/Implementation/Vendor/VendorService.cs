@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SendGrid.Helpers.Errors.Model;
-using Tamkeen.Application.DTOs;
 using Tamkeen.Application.DTOs.Feedback;
 using Tamkeen.Application.DTOs.Vendor;
+using Tamkeen.Application.DTOs.VendorInvitation_DTOs;
 using Tamkeen.Application.Interfaces.Vendor;
 using Tamkeen.Domain.Entities;
 using Tamkeen.Infrastructure.Data;

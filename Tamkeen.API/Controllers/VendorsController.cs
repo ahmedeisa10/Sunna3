@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tamkeen.Application.DTOs;
+using Tamkeen.Application.DTOs.VendorInvitation_DTOs;
 using Tamkeen.Application.Interfaces.Vendor;
 
 namespace Tamkeen.API.Controllers

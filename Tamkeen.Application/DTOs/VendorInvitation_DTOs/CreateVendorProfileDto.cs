@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Tamkeen.Application.DTOs
+namespace Tamkeen.Application.DTOs.VendorInvitation_DTOs
 {
     public class CreateVendorProfileDto
     {

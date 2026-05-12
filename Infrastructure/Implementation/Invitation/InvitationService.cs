@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Tamkeen.Application.DTOs;
-using Tamkeen.Application.Interfaces;
+using Tamkeen.Application.Interfaces.Invitation;
 using Tamkeen.Domain.Entities;
 using Tamkeen.Domain.Enums;
 using Tamkeen.Infrastructure.Data;
 
-namespace Tamkeen.Infrastructure.Implementation
+namespace Tamkeen.Infrastructure.Implementation.Invitation
 {
     public class InvitationService : IInvitationService
     {

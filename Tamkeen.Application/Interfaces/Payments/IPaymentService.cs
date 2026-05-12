@@ -4,11 +4,11 @@ namespace Tamkeen.Application.Interfaces.Payments
 {
     public interface IPaymentService
     {
-        // الـ tenant يبدأ الدفع
+        // Tenant start Payment
         Task<PaymentResponseDto> InitiatePaymentAsync(
             InitiatePaymentDto dto, string tenantId);
 
-        // Paymob بيبعت webhook لما الدفع يتم
+        // Paymob send webhook when payment is done
         Task HandleWebhookAsync(string payload, string hmac);
         Task<PaymentVerifyResultDto> VerifyAndSyncPaymentAsync(Guid paymentId);
         Task<PaymentVerifyResultDto> ConfirmFromCallbackAsync(CallbackConfirmDto dto);

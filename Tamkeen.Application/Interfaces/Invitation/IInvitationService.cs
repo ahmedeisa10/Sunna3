@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Tamkeen.Application.DTOs;
 
-namespace Tamkeen.Application.Interfaces
+namespace Tamkeen.Application.Interfaces.Invitation
 {
     public interface IInvitationService
     {

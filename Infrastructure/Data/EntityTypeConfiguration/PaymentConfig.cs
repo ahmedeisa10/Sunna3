@@ -39,7 +39,7 @@ namespace Tamkeen.Infrastructure.Data.EntityTypeConfiguration
                    .HasForeignKey(p => p.VendorId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            // Ticket Relation (ممكن تسيبه Cascade عادي)
+            // Ticket Relation 
             builder.HasOne(p => p.Ticket)
                    .WithMany()
                    .HasForeignKey(p => p.TicketId)

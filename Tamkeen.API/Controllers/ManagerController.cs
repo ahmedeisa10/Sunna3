@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tamkeen.Application.Interfaces;
+using Tamkeen.Application.Interfaces.Manager;
 
 namespace Tamkeen.API.Controllers
 {

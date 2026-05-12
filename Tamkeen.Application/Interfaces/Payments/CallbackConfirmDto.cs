@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Tamkeen.Application.Interfaces.Payments
 {
-    // DTO جديد
     public class CallbackConfirmDto
     {
         public string PaymentId { get; set; }

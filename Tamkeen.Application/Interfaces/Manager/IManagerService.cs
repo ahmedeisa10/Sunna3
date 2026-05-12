@@ -7,7 +7,7 @@ using Tamkeen.Application.DTOs.Manager_Management;
 using Tamkeen.Application.DTOs.Payment_DTOs;
 using Tamkeen.Application.DTOs.Vendor;
 
-namespace Tamkeen.Application.Interfaces
+namespace Tamkeen.Application.Interfaces.Manager
 {
     public interface IManagerService
     {

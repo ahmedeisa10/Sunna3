@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 using Tamkeen.Application.DTOs.Manager_Management;
 using Tamkeen.Application.DTOs.Payment_DTOs;
 using Tamkeen.Application.DTOs.Vendor;
-using Tamkeen.Application.Interfaces;
+using Tamkeen.Application.Interfaces.Manager;
 using Tamkeen.Domain.Entities;
 using Tamkeen.Infrastructure.Data;
 
-namespace Tamkeen.Infrastructure.Implementation
+namespace Tamkeen.Infrastructure.Implementation.Manager
 {
     public class ManagerService: IManagerService
     {

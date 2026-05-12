@@ -30,11 +30,11 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             _settings = settings.Value;
         }
 
-        // ── الـ Tenant يبدأ الدفع ──────────────────────────
+        //Tenant start Payment
         public async Task<PaymentResponseDto> InitiatePaymentAsync(
             InitiatePaymentDto dto, string tenantId)
         {
-            // جيب التيكيت
+            
             var ticket = await _context.Tickets
                 .Include(t => t.Tenant)
                 .FirstOrDefaultAsync(t => t.Id == dto.TicketId)
@@ -47,13 +47,13 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             if (ticket.TenantId != tenantId)
                 throw new ForbiddenException("Access denied");
 
-            // احسب المبالغ
+            // calcualte money
             decimal total =ticket.Price;           // لازم يبقى عندك Price في الـ Ticket
             decimal platformAmount = total * 0.10m;          // 10% للمنصة
             decimal vendorAmount = total * 0.90m;          // 90% للـ vendor
             int amountInCents = (int)(total * 100);     // Paymob بيشتغل بالقروش
 
-            // سجل الـ Payment في الـ DB
+            // set payment in DB
             var payment = new Payment
             {
                 Id = Guid.NewGuid(),
@@ -72,20 +72,20 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             await _context.Payments.AddAsync(payment);
             await _context.SaveChangesAsync();
 
-            // ── الـ 3 خطوات مع Paymob ──────────────────────
+            // Paymob in 3 steps
 
-            // خطوة 1: Auth
+            // 1- Auth
             var authToken = await _paymob.GetAuthTokenAsync();
 
-            // خطوة 2: Order
+            //  2- Order
             var orderId = await _paymob.RegisterOrderAsync(
                 authToken, amountInCents, payment.Id.ToString());
 
-            // اتذكر الـ orderId
+            // orderId
             payment.PaymobOrderId = orderId;
             await _context.SaveChangesAsync();
 
-            // خطوة 3: Payment Key
+            //  3- Payment Key
             var integrationId = dto.PaymentMethod == "card"
                 ? _settings.CardIntegrationId
                 : _settings.WalletIntegrationId;
@@ -99,7 +99,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                 "http://localhost:4200/payment/callback"
             );
 
-            // لو كارت → رجّع iframe url
+            // If card => return IframeURL
             if (dto.PaymentMethod == "card")
             {
                 return new PaymentResponseDto
@@ -109,7 +109,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                 };
             }
 
-            // لو wallet → رجّع redirect url
+            //  If wallet => return redirect Url
             var redirectUrl = await _paymob.RequestWalletPaymentAsync(
                 paymentToken, dto.WalletNumber!);
 
@@ -125,10 +125,10 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             return _context.Payments;
         }
 
-        // ── Webhook: Paymob بيبعته لما الدفع يتم ──────────
+        // Webhook: Paymob sends it when payment is made
         public async Task HandleWebhookAsync(string payload, string hmacHeader)
         {
-            // ── تأكد إن الـ webhook ده من Paymob فعلاً ──────
+            // Make sure this webhook is actually from Paymob
             if (!VerifyHmac(payload, hmacHeader))
                 throw new UnauthorizedAccessException("Invalid HMAC");
 
@@ -140,13 +140,13 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
 
             if (!success) return;  // الدفع فشل، مش هنعمل حاجة
 
-            // جيب الـ Payment من الـ DB
+            // Get Payment from DB
             if (!Guid.TryParse(orderId, out var paymentId)) return;
 
             var payment = await _context.Payments.FindAsync(paymentId);
             if (payment == null || payment.IsPaid) return;
 
-            // اتذكر إن الدفع اتم
+            
             payment.IsPaid = true;
             payment.TransactionId = transId;
             payment.PaidAt = DateTime.UtcNow;
@@ -158,7 +158,6 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
 
             await _context.SaveChangesAsync();
         }
-        // في PaymentService.cs
         public async Task<PaymentVerifyResultDto> VerifyAndSyncPaymentAsync(Guid paymentId)
         {
             var payment = await _context.Payments
@@ -170,7 +169,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
 
             if (payment.IsPaid)
             {
-                // sync الـ Ticket لو لسه مش متحدث
+                // sync the ticket if you haven't updated yet
                 if (payment.Ticket != null && !payment.Ticket.IsPaid)
                 {
                     payment.Ticket.IsPaid = true;
@@ -185,10 +184,9 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
 
             return new PaymentVerifyResultDto { IsPaid = false };
         }
-        // ── تحقق من HMAC عشان نتأكد إن الـ webhook من Paymob ─
+        //Check the HMAC to make sure the webhook is from Paymob
         private bool VerifyHmac(string payload, string hmacHeader)
         {
-            // HMAC Secret بتاخده من Paymob Dashboard → Developers → Webhooks
             var secret = _settings.HmacSecret;
             var keyBytes = Encoding.UTF8.GetBytes(secret);
             var msgBytes = Encoding.UTF8.GetBytes(payload);
@@ -199,7 +197,6 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
 
             return computed == hmacHeader.ToLower();
         }
-        // في PaymentService.cs
         public async Task<PaymentVerifyResultDto> ConfirmFromCallbackAsync(CallbackConfirmDto dto)
         {
             if (!Guid.TryParse(dto.PaymentId, out var paymentId))
@@ -212,7 +209,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
             if (payment == null)
                 return new PaymentVerifyResultDto { IsPaid = false };
 
-            // لو مدفوع بالفعل — رجّع البيانات
+            // If already paid — return the data
             if (payment.IsPaid)
                 return new PaymentVerifyResultDto
                 {
@@ -220,7 +217,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                     TicketId = payment.TicketId
                 };
 
-            // ✅ Paymob قال success — صدّقه وحدّث الـ DB
+            // Paymob said success => update the database
             if (dto.Success)
             {
                 payment.IsPaid = true;
