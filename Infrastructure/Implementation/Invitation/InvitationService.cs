@@ -41,11 +41,11 @@ namespace Tamkeen.Infrastructure.Implementation.Invitation
             await _context.SaveChangesAsync();
 
             // Registration Link
-            var registrationLink = $"http://localhost:4200/vendor-register?token={token}";
+            var registrationLink = $"https://sunna3.vercel.app/vendor-register?token={token}";
 
             // Whatsapp Message
-            var message = $"🎉 مبارك انضمامك لينا!\n\n" +
-                          $"أهلاً بيك في فريقنا 👋\n" +
+            var message = $" مبارك انضمامك لينا!\n\n" +
+                          $"أهلاً بيك في فريقنا \n" +
                           $"يسعدنا وجودك معانا 💙\n\n" +
                           $"سجل من هنا 👇\n{registrationLink}";
 

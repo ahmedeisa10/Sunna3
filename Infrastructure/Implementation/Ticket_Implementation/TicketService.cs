@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SendGrid.Helpers.Errors.Model;
@@ -80,7 +81,7 @@ namespace Tamkeen.Infrastructure.Implementation.Ticket_Implementation
             var notifyTasks = managerIds.Select(mid =>
                 _notificationService.NotifyNewTicketAsync(mid, ticket.Id.ToString(), ticket.Description));
             await Task.WhenAll(notifyTasks);
-            
+
             return _mapper.Map<TicketResponseDto>(ticket);
         }
 

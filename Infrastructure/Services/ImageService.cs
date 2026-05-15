@@ -20,7 +20,7 @@ namespace Tamkeen.Infrastructure.Services
 
         public async Task<string> SaveImageAsync(IFormFile file, string folder)
         {
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".JFIF" };
             var extension = Path.GetExtension(file.FileName).ToLower();
 
             if (!allowedExtensions.Contains(extension))

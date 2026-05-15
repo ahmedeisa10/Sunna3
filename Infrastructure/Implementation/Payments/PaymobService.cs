@@ -84,7 +84,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                     currency = "EGP",
                     integration_id = int.Parse(integrationId),
                     lock_order_when_paid = true,
-                    redirection_url = callbackUrl ?? "http://localhost:4200/payment/callback"
+                    redirection_url = callbackUrl ?? "https://sunna3.vercel.app/payment/callback"
                 }
             );
 

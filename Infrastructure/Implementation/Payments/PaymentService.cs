@@ -96,7 +96,7 @@ namespace Tamkeen.Infrastructure.Implementation.Payments
                 ticket.Tenant.Email!,
                 ticket.Tenant.FullName,
                 dto.WalletNumber,
-                "http://localhost:4200/payment/callback"
+                "https://sunna3.vercel.app/payment/callback"
             );
 
             // If card => return IframeURL
