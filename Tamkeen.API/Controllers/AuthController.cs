@@ -54,9 +54,29 @@ namespace Tamkeen.API.Controllers
             var result = await _authService.ResendCodeAsync(dto.Email);
 
             if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = result.Message
+                });
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = result.Message
+            });
+        }
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto dto)
+        {
+            var result = await _authService.GoogleLoginAsync(dto);
+
+            if (!result.Success)
                 return BadRequest(result.Message);
 
-            return Ok(result.Message);
+            return Ok(result.Data);
         }
     }
 }

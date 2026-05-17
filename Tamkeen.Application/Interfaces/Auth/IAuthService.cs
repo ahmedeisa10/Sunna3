@@ -7,6 +7,7 @@ namespace Tamkeen.Application.Interfaces.Auth
         Task<(bool Success, ConfirmEmailResponseDto? Data, string Message)> ConfirmEmailAsync(ConfirmEmailDto dto);
         Task<(bool Success, AuthResponseDto? Data, string Message)> LoginAsync(LoginDto dto);
         Task<(bool Success, string Message)> ResendCodeAsync(string email);
+        Task<(bool Success, AuthResponseDto? Data, string Message)> GoogleLoginAsync(GoogleLoginDto dto);
     }
 }
 // response 

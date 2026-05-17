@@ -1,6 +1,8 @@
-﻿using Infrastructure.Services;
+﻿using Google.Apis.Auth;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Tamkeen.Application.DTOs.Auth;
 using Tamkeen.Application.Interfaces.Auth;
 using Tamkeen.Domain.Entities;
@@ -14,15 +16,18 @@ namespace Tamkeen.Infrastructure.Implementation.Auth
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailService _emailService;
         private readonly ITokenService _tokenService;
+        private readonly IConfiguration _configuration;
 
         public AuthService(
             UserManager<AppUser> userManager,
             IEmailService emailService,
-            ITokenService tokenService)
+            ITokenService tokenService,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _emailService = emailService;
             _tokenService = tokenService;
+            _configuration = configuration;
         }
 
         // ================= REGISTER =================
@@ -139,6 +144,55 @@ namespace Tamkeen.Infrastructure.Implementation.Auth
             await _emailService.SendConfirmationEmail(email, code);
 
             return (true, "Code sent again.");
+        }
+        // sign in with google
+        public async Task<(bool Success, AuthResponseDto? Data, string Message)> GoogleLoginAsync(GoogleLoginDto dto)
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _configuration["Google:ClientId"] }
+            };
+
+            GoogleJsonWebSignature.Payload payload;
+            try
+            {
+                payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken, settings);
+            }
+            catch
+            {
+                return (false, null, "Google token غير صالح");
+            }
+
+            var user = await _userManager.FindByEmailAsync(payload.Email);
+
+            if (user == null)
+            {
+                user = new AppUser
+                {
+                    UserName = payload.Email,
+                    Email = payload.Email,
+                    FullName = payload.Name,
+                    EmailConfirmed = true,
+                    ImageUrl = payload.Picture
+                };
+
+                var createResult = await _userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                    return (false, null, "فشل إنشاء الحساب");
+
+                await _userManager.AddToRoleAsync(user, "Tenant");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var token = _tokenService.GenerateToken(user.Id, user.Email!, roles);
+
+            return (true, new AuthResponseDto
+            {
+                token = token,
+                email = user.Email!,
+                fullName = user.FullName,
+                roles = roles
+            }, "تم تسجيل الدخول");
         }
     }
 }

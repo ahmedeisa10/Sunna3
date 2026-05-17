@@ -186,7 +186,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.AppUser", b =>
@@ -315,7 +315,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("ChatMessages");
+                    b.ToTable("ChatMessages", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.Company", b =>
@@ -331,7 +331,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.Feedback", b =>
@@ -363,7 +363,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("Feedbacks", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.Image", b =>
@@ -387,7 +387,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("Images");
+                    b.ToTable("Images", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.Payment", b =>
@@ -455,7 +455,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.SparePartRequest", b =>
@@ -486,7 +486,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("SparePartRequests");
+                    b.ToTable("SparePartRequests", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.Ticket", b =>
@@ -555,7 +555,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("Tickets", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.TicketApplication", b =>
@@ -581,7 +581,7 @@ namespace Tamkeen.Infrastructure.Migrations
                     b.HasIndex("TicketId", "VendorId")
                         .IsUnique();
 
-                    b.ToTable("TicketApplications");
+                    b.ToTable("TicketApplications", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.VendorInvitation", b =>
@@ -611,7 +611,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("vendorInvitations");
+                    b.ToTable("vendorInvitations", (string)null);
                 });
 
             modelBuilder.Entity("Tamkeen.Domain.Entities.VendorProfile", b =>
@@ -651,7 +651,7 @@ namespace Tamkeen.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("vendorProfiles");
+                    b.ToTable("vendorProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

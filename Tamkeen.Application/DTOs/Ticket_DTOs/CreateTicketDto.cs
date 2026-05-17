@@ -14,6 +14,6 @@ namespace Tamkeen.Application.DTOs.Ticket_DTOs
         public DateTime Arrival { get; set; }
         public DateTime Deadline { get; set; }
         public Guid? CompanyId { get; set; }
-        public List<IFormFile> Images { get; set; }
+        public List<IFormFile>? Images { get; set; }
     }
 }
