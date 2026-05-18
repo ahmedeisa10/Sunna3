@@ -9,7 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Tamkeen.Application.Interfaces;
 using Tamkeen.Application.Interfaces.Account;
+using Tamkeen.Application.Interfaces.AI;
 using Tamkeen.Application.Interfaces.Auth;
+using Tamkeen.Application.Interfaces.Contact;
 using Tamkeen.Application.Interfaces.Feedback;
 using Tamkeen.Application.Interfaces.Invitation;
 using Tamkeen.Application.Interfaces.Manager;
@@ -19,7 +21,9 @@ using Tamkeen.Application.Interfaces.Vendor;
 using Tamkeen.Domain.Entities;
 using Tamkeen.Infrastructure.Data;
 using Tamkeen.Infrastructure.Implementation.Account;
+using Tamkeen.Infrastructure.Implementation.AI;
 using Tamkeen.Infrastructure.Implementation.Auth;
+using Tamkeen.Infrastructure.Implementation.Contact;
 using Tamkeen.Infrastructure.Implementation.Invitation;
 using Tamkeen.Infrastructure.Implementation.Manager;
 using Tamkeen.Infrastructure.Implementation.Payments;
@@ -112,6 +116,8 @@ public static class DependencyInjection
         configuration.GetSection("Paymob"));
         services.AddHttpClient<PaymobService>();
         services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IContactService, ContactService>();
+        services.AddHttpClient<IAIService, AIService>();
 
 
         return services;
