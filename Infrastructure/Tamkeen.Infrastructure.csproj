@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Anthropic.SDK" Version="5.10.0" />
     <PackageReference Include="EPPlus" Version="8.5.1" />
     <PackageReference Include="Google.Apis.Auth" Version="1.70.0" />
     <PackageReference Include="MailKit" Version="4.15.1" />
