@@ -31,5 +31,22 @@ namespace Tamkeen.API.Controllers
 
             return Ok(new { message = result.Message });
         }
+        // GET /api/Contact/messages  
+        [HttpGet("messages")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> GetMessages()
+        {
+            var messages = await _contactService.GetAllMessagesAsync();
+            return Ok(messages);
+        }
+
+        // PATCH /api/Contact/messages/{id}/read
+        [HttpPatch("messages/{id}/read")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> MarkRead(int id)
+        {
+            await _contactService.MarkAsReadAsync(id);
+            return Ok(new { message = "تم التحديث" });
+        }
     }
 }
