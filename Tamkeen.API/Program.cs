@@ -61,7 +61,7 @@ app.UseStaticFiles();
 app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapHub<NotificationHub>("/hubs/notifications");
+//app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
