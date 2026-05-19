@@ -1,7 +1,7 @@
-﻿using System.Net.Http.Headers;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Tamkeen.Application.DTOs.AI;
 using Tamkeen.Application.Interfaces.AI;
 
@@ -10,59 +10,82 @@ namespace Tamkeen.Infrastructure.Implementation.AI
     public class AIService : IAIService
     {
         private readonly HttpClient _http;
-        private readonly string _apiKey;
+        private readonly string? _apiKey;
+        private readonly ILogger<AIService> _logger;
 
-        public AIService(HttpClient http, IConfiguration config)
+        public AIService(HttpClient http, IConfiguration config, ILogger<AIService> logger)
         {
             _http = http;
-            _apiKey = config["Anthropic:ApiKey"]!;
+            _logger = logger;
+            _apiKey = config["Groq:ApiKey"];
+
+            if (string.IsNullOrWhiteSpace(_apiKey))
+                _logger.LogError("Groq API Key is MISSING!");
+            else
+                _logger.LogInformation("Groq API Key loaded OK");
         }
 
         public async Task<MaintenanceAdviceResponseDto> GetMaintenanceAdviceAsync(string problem)
         {
-            var systemPrompt = """
-                أنت مساعد صيانة منزلية خبير. مهمتك هي مساعدة المستأجرين بتقديم نصائح أولية بسيطة وآمنة قبل طلب فني.
-                
-                القواعد:
-                - اكتب بالعربية فقط
-                - قدّم 3 إلى 5 خطوات عملية بسيطة ومرقّمة
-                - ابدأ دائماً بالأمان (افصل الكهرباء / أغلق المياه إن لزم)
-                - إذا كانت المشكلة خطيرة، وضّح ذلك واطلب من المستأجر الاتصال بفني فوراً
-                - لا تقترح حلولاً تتطلب مهارة متخصصة
-                - اختم دائماً بجملة: "إذا استمرت المشكلة، يُنصح بإنشاء طلب صيانة."
-                - لا تستخدم markdown (لا نجوم، لا هاشتاق)
-                """;
-
-            var body = new
+            try
             {
-                model = "claude-opus-4-20250514",
-                max_tokens = 1024,
-                system = systemPrompt,
-                messages = new[]
+                if (string.IsNullOrWhiteSpace(_apiKey))
+                    return new MaintenanceAdviceResponseDto { Advice = "API Key غير موجود" };
+
+                var systemPrompt = """
+                    أنت مساعد صيانة منزلية خبير. مهمتك تقديم نصائح أولية بسيطة وآمنة للمستأجرين قبل طلب فني.
+                    القواعد:
+                    - اكتب بالعربية فقط
+                    - قدّم 3 إلى 5 خطوات عملية مرقّمة
+                    - ابدأ بالأمان (افصل الكهرباء / أغلق المياه إن لزم)
+                    - لو المشكلة خطيرة قول ذلك واطلب الاتصال بفني فوراً
+                    - لا تقترح حلولاً تتطلب مهارة متخصصة
+                    - اختم بجملة: "إذا استمرت المشكلة، يُنصح بإنشاء طلب صيانة."
+                    - لا تستخدم markdown أو نجوم
+                    """;
+
+                var body = new
                 {
-                    new { role = "user", content = $"مشكلتي: {problem}" }
-                }
-            };
+                    model = "llama-3.3-70b-versatile",
+                    messages = new[]
+                    {
+                        new { role = "system", content = systemPrompt },
+                        new { role = "user",   content = $"مشكلتي: {problem}" }
+                    },
+                    max_tokens = 1024,
+                    temperature = 0.7
+                };
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.anthropic.com/v1/messages");
-            request.Headers.Add("x-api-key", _apiKey);
-            request.Headers.Add("anthropic-version", "2023-06-01");
-            request.Content = new StringContent(
-                JsonSerializer.Serialize(body),
-                Encoding.UTF8,
-                "application/json"
-            );
+                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.groq.com/openai/v1/chat/completions");
+                request.Headers.Add("Authorization", $"Bearer {_apiKey}");
+                request.Content = new StringContent(
+                    JsonSerializer.Serialize(body),
+                    Encoding.UTF8,
+                    "application/json"
+                );
 
-            var response = await _http.SendAsync(request);
-            var json = await response.Content.ReadAsStringAsync();
+                var response = await _http.SendAsync(request);
+                var json = await response.Content.ReadAsStringAsync();
 
-            using var doc = JsonDocument.Parse(json);
-            var text = doc.RootElement
-                .GetProperty("content")[0]
-                .GetProperty("text")
-                .GetString() ?? "لم أتمكن من الحصول على نصيحة.";
+                _logger.LogInformation("Groq status: {status}", response.StatusCode);
 
-            return new MaintenanceAdviceResponseDto { Advice = text };
+                if (!response.IsSuccessStatusCode)
+                    return new MaintenanceAdviceResponseDto { Advice = $"خطأ: {json}" };
+
+                using var doc = JsonDocument.Parse(json);
+                var text = doc.RootElement
+                    .GetProperty("choices")[0]
+                    .GetProperty("message")
+                    .GetProperty("content")
+                    .GetString() ?? "لم أتمكن من الحصول على نصيحة.";
+
+                return new MaintenanceAdviceResponseDto { Advice = text };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception in GetMaintenanceAdviceAsync");
+                return new MaintenanceAdviceResponseDto { Advice = $"حصل خطأ: {ex.Message}" };
+            }
         }
     }
 }

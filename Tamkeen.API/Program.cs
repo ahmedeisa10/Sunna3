@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Tamkeen.Application.DependencyInjection;
+using Tamkeen.Application.Interfaces.AI;
 using Tamkeen.Domain.Entities;
 using Tamkeen.Infrastructure.Hubs;
+using Tamkeen.Infrastructure.Implementation.AI;
 using Tamkeen.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +21,8 @@ builder.Configuration
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddHttpClient<IAIService, AIService>();
+
 
 builder.Services.AddCors(options =>
 {
@@ -26,9 +30,11 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("https://sunna3.vercel.app")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
+
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, NameIdentifierUserIdProvider>();
 
@@ -41,6 +47,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync("{\"message\": \"Internal server error\"}");
+    });
+});
 
 app.UseStaticFiles();
 app.UseCors("AllowAngular");
