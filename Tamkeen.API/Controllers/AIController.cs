@@ -27,5 +27,12 @@ namespace Tamkeen.API.Controllers
             var result = await _aiService.GetMaintenanceAdviceAsync(dto.Problem);
             return Ok(result);
         }
+        [HttpPost("maintenance-schedule")]
+        public async Task<IActionResult> GetMaintenanceSchedule([FromBody] MaintenanceScheduleRequestDto dto)
+        {
+            if (dto == null) return BadRequest();
+            var result = await _aiService.GetMaintenanceScheduleAsync(dto);
+            return Ok(result);
+        }
     }
 }
